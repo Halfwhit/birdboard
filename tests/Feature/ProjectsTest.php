@@ -16,6 +16,7 @@ class ProjectsTest extends TestCase
         $attributes = factory('App\Project')->raw();
 
         $this->post('/projects', $attributes)->assertRedirect('login');
+        $this->get('/projects/create', $attributes)->assertRedirect('login');
     }
 
     /** @test */
@@ -54,7 +55,6 @@ class ProjectsTest extends TestCase
     {
         $this->be(factory('App\User')->create());
 
-
         $this->withoutExceptionHandling();
 
         $project = factory('App\Project')->create(['owner_id' => auth()->id()]);
@@ -62,6 +62,16 @@ class ProjectsTest extends TestCase
         $this->get($project->path())
             ->assertSee($project->description)
             ->assertSee($project->title);
+    }
+
+    /** @test */
+    public function an_authenticated_user_cannot_view_projects_of_others()
+    {
+        $this->be(factory('App\User')->create());
+
+        $project = factory('App\Project')->create();
+
+        $this->get($project->path())->assertStatus(403);
     }
 
     /** @test */
